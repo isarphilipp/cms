@@ -95,7 +95,21 @@ class Stache
 
     public function refresh()
     {
-        return $this->clear()->warm();
+        Partyline::comment('Refreshing Stache...');
+
+        $lock = tap($this->lock('stache-warming'))->acquire(true);
+
+        $this->startTimer();
+
+        $this->stores()->reverse()->each->clear();
+
+        $this->duplicates()->clear();
+
+        $this->stores()->each->warm();
+
+        $this->stopTimer();
+
+        $lock->release();
     }
 
     public function warm()
