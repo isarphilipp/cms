@@ -95,7 +95,7 @@ class Stache
 
     public function refresh()
     {
-        Partyline::comment('Refreshing Stache...');
+        Partyline::comment('Refreshing Stache with locking...');
 
         $lock = tap($this->lock('stache-warming'))->acquire(true);
 
