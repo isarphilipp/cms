@@ -3,9 +3,14 @@
 namespace Statamic\Stache;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
-use Statamic\Events\StacheUpdated;
-use Statamic\Events\StacheUpdating;
+use Statamic\Events\StacheCleared;
+use Statamic\Events\StacheClearing;
+use Statamic\Events\StacheRefreshed;
+use Statamic\Events\StacheRefreshing;
+use Statamic\Events\StacheWarmed;
+use Statamic\Events\StacheWarming;
 use Statamic\Extensions\FileStore;
 use Statamic\Facades\File;
 use Statamic\Stache\Stores\Store;
@@ -86,7 +91,7 @@ class Stache
     {
         Partyline::comment('Clearing Stache...');
 
-        StacheUpdating::dispatch($this, StacheUpdating::OPERATION_CLEAR);
+        StacheClearing::dispatch($this);
 
         $this->stores()->reverse()->each->clear();
 
@@ -94,7 +99,7 @@ class Stache
 
         Cache::forget('stache::timing');
 
-        StacheUpdated::dispatch($this, StacheUpdated::OPERATION_CLEAR);
+        StacheCleared::dispatch($this);
 
         return $this;
     }
@@ -105,7 +110,7 @@ class Stache
 
         $lock = tap($this->lock('stache-updating'))->acquire(true);
 
-        StacheUpdating::dispatch($this, StacheUpdating::OPERATION_REFRESH);
+        StacheRefreshing::dispatch($this);
 
         $this->startTimer();
 
@@ -117,7 +122,7 @@ class Stache
 
         $this->stopTimer();
 
-        StacheUpdated::dispatch($this, StacheUpdated::OPERATION_REFRESH);
+        StacheRefreshed::dispatch($this);
 
         $lock->release();
     }
@@ -128,7 +133,7 @@ class Stache
 
         $lock = tap($this->lock('stache-updating'))->acquire(true);
 
-        StacheUpdating::dispatch($this, StacheUpdating::OPERATION_WARM);
+        StacheWarming::dispatch($this);
 
         $this->startTimer();
 
@@ -136,7 +141,7 @@ class Stache
 
         $this->stopTimer();
 
-        StacheUpdated::dispatch($this, StacheUpdated::OPERATION_WARM);
+        StacheWarmed::dispatch($this);
 
         $lock->release();
     }

@@ -11,7 +11,7 @@ class StacheRefresh extends Command
 {
     use RunsInPlease;
 
-    protected $signature = 'statamic:stache:refresh';
+    protected $signature = 'statamic:stache:refresh {--clear-application-cache=false}';
     protected $description = 'Clear and rebuild the "Stache" cache';
 
     public function handle()
