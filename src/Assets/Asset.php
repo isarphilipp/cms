@@ -636,10 +636,13 @@ class Asset implements AssetContract, Augmentable
         $path = Path::tidy($directory.'/'.$filename.'.'.$ext);
         $path = ltrim($path, '/');
 
-        // If the file exists, we'll append a timestamp to prevent overwriting.
-        if ($this->disk()->exists($path)) {
-            $basename = $filename.'-'.Carbon::now()->timestamp.'.'.$ext;
-            $path = Str::removeLeft(Path::assemble($directory, $basename), '/');
+        if( ! config('statamic.assets.replace_on_upload')) {
+
+            // If the file exists, we'll append a timestamp to prevent overwriting.
+            if ($this->disk()->exists($path)) {
+                $basename = $filename.'-'.Carbon::now()->timestamp.'.'.$ext;
+                $path = Str::removeLeft(Path::assemble($directory, $basename), '/');
+            }
         }
 
         $stream = fopen($file->getRealPath(), 'r');
@@ -649,6 +652,7 @@ class Asset implements AssetContract, Augmentable
         }
 
         $this->path($path)->syncOriginal();
+        $this->clearCaches();
 
         $this->save();
 

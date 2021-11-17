@@ -4,8 +4,8 @@ namespace Statamic\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Statamic\Events\AssetUploaded;
-use Statamic\Facades\Folder;
 use Statamic\Facades\Path;
+use Facades\Statamic\Imaging\GlideServer;
 use Statamic\Imaging\PresetGenerator;
 
 class GeneratePresetImageManipulations implements ShouldQueue
@@ -46,10 +46,10 @@ class GeneratePresetImageManipulations implements ShouldQueue
             return;
         }
 
-        $folder = Path::tidy('local/cache/glide/containers/'.$asset->containerId().'/'.$asset->path());
+        $folder = Path::tidy(GlideServer::cachePath().'/containers/'.$asset->containerId().'/'.$asset->path());
 
-        if (Folder::exists($folder)) {
-            Folder::delete($folder);
+        if (\File::exists($folder)) {
+            \File::deleteDirectory($folder);
         }
 
         $this->generator->generate($asset);
