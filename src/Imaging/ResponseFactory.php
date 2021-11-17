@@ -2,6 +2,8 @@
 
 namespace Statamic\Imaging;
 
+use Carbon\Carbon;
+use League\Flysystem\FilesystemInterface;
 use League\Glide\Responses\ResponseFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -47,8 +49,11 @@ class ResponseFactory implements ResponseFactoryInterface
         $response->headers->set('Content-Type', $cache->{$mimeTypeMethod}($path));
         $response->headers->set('Content-Length', $cache->{$fileSizeMethod}($path));
         $response->setPublic();
-        $response->setMaxAge(31536000);
-        $response->setExpires(date_create()->modify('+1 years'));
+
+        $expiryAfterSeconds = config('statamic.assets.glide_http_expiry_after_seconds', 31536000);
+
+        $response->setMaxAge($expiryAfterSeconds);
+        $response->setExpires(Carbon::now()->addSeconds($expiryAfterSeconds));
 
         if ($this->request) {
             $response->setLastModified(date_create()->setTimestamp($cache->{$lastModifiedMethod}($path)));
