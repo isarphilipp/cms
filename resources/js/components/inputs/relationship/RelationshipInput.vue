@@ -38,7 +38,7 @@
                 />
             </div>
 
-            <div class="text-xs text-grey" v-if="maxItemsReached && maxItems != 1">
+            <div class="py-1 text-xs text-grey" v-if="maxItemsReached && maxItems != 1">
                 <span>{{ __('Maximum items selected:')}}</span>
                 <span>{{ maxItems }}/{{ maxItems }}</span>
             </div>
@@ -236,13 +236,12 @@ export default {
 
         getDataForSelections(selections) {
             this.loading = true;
-            const params = { site: this.site, selections };
 
-            return this.$axios.get(this.itemDataUrl, { params }).then(response => {
-                    this.$emit('item-data-updated', response.data.data);
-                }).finally(() => {
-                    this.loading = false;
-                });
+            return this.$axios.post(this.itemDataUrl, { site: this.site, selections }).then(response => {
+                this.$emit('item-data-updated', response.data.data);
+            }).finally(() => {
+                this.loading = false;
+            });
         },
 
         makeSortable() {

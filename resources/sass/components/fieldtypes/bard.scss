@@ -416,12 +416,27 @@
                 content: '';
             }
         }
+
+        a {
+            @apply text-blue underline break-words;
+        }
+
+        a:active,
+        a:focus,
+        a:hover {
+            outline: 0;
+            text-decoration: underline;
+        }
     }
 
     p > code {
         @apply font-mono bg-grey-40 rounded-sm text-xs relative;
         padding: 2px 4px;
         top: -1px;
+    }
+
+    pre {
+        margin-bottom: .85em;
     }
 
     pre code {
