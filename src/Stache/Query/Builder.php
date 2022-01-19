@@ -31,7 +31,7 @@ abstract class Builder extends BaseBuilder
 
         $items = $this->getItems($keys);
 
-        $items->each->selectedQueryColumns($columns);
+        $items->each->selectedQueryColumns($this->columns ?? $columns);
 
         return $this->collect($items);
     }
@@ -90,6 +90,16 @@ abstract class Builder extends BaseBuilder
 
         // Finally, we're left with the keys in the correct order.
         return $items->keys();
+    }
+
+    public function getWhereColumnKeysFromStore($store, $where)
+    {
+        return $this->store->store($store)
+            ->index($where['column'])
+            ->items()
+            ->mapWithKeys(function ($item, $key) use ($store) {
+                return ["{$store}::{$key}" => $item];
+            });
     }
 
     protected function intersectKeysFromWhereClause($keys, $newKeys, $where)
@@ -155,4 +165,17 @@ abstract class Builder extends BaseBuilder
             return $value !== null;
         });
     }
+
+    protected function filterWhereColumn($values, $where)
+    {
+        $whereColumnKeys = $this->getWhereColumnKeyValuesByIndex($where['value']);
+
+        return $values->filter(function ($value, $key) use ($where, $whereColumnKeys) {
+            $method = 'filterTest'.$this->operators[$where['operator']];
+
+            return $this->{$method}($value, $whereColumnKeys->get($key));
+        });
+    }
+
+    abstract protected function getWhereColumnKeyValuesByIndex($column);
 }
