@@ -3,7 +3,9 @@
 namespace Statamic\Fieldtypes\Bard;
 
 use ProseMirrorToHtml\Marks\Link;
+use Statamic\Entries\Entry;
 use Statamic\Facades\Data;
+use Statamic\Facades\Site;
 use Statamic\Support\Str;
 
 class LinkMark extends Link
@@ -27,6 +29,10 @@ class LinkMark extends Link
 
         if (! $item = Data::find($ref)) {
             return '';
+        }
+
+        if($item instanceof Entry){
+            return $item->in(Site::current()->handle())?->url() ?? $item->url();
         }
 
         return $item->url();
