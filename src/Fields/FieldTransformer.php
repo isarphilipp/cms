@@ -35,6 +35,10 @@ class FieldTransformer
             unset($field['localizable']);
         }
 
+        if (Arr::get($field, 'duplicate', true) === true) {
+            unset($field['duplicate']);
+        }
+
         return array_filter([
             'handle' => $submitted['handle'],
             'field' => $field,
@@ -92,6 +96,7 @@ class FieldTransformer
         $config['width'] = $config['width'] ?? 100;
         $config['localizable'] = $config['localizable'] ?? false;
         $config = static::normalizeRequiredValidation($config);
+        $config = static::normalizeVisibility($config);
 
         return [
             'handle' => $field['handle'],
@@ -155,6 +160,19 @@ class FieldTransformer
 
         Arr::forget($config, 'required');
         Arr::set($config, 'validate', $validate->all());
+
+        return $config;
+    }
+
+    protected static function normalizeVisibility($config)
+    {
+        $visibility = Arr::get($config, 'visibility');
+
+        $legacyReadOnly = Arr::pull($config, 'read_only');
+
+        if ($legacyReadOnly && ! $visibility) {
+            $config['visibility'] = 'read_only';
+        }
 
         return $config;
     }

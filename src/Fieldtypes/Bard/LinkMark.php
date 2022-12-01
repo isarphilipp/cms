@@ -19,7 +19,7 @@ class LinkMark extends Link
         return $tag;
     }
 
-    private function convertHref($href)
+    protected function convertHref($href)
     {
         if (! Str::startsWith($href, 'statamic://')) {
             return $href;
