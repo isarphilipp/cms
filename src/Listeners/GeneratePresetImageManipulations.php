@@ -5,9 +5,10 @@ namespace Statamic\Listeners;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Statamic\Events\AssetReuploaded;
 use Statamic\Events\AssetUploaded;
+use Statamic\Facades\Config;
 use Statamic\Facades\Folder;
 use Statamic\Facades\Path;
-use Facades\Statamic\Imaging\GlideServer;
+use Statamic\Imaging\GlideManager;
 use Statamic\Imaging\PresetGenerator;
 
 class GeneratePresetImageManipulations implements ShouldQueue
@@ -52,8 +53,14 @@ class GeneratePresetImageManipulations implements ShouldQueue
         if (! $asset->isImage()) {
             return;
         }
+        //Replacement code for GlideServer::cachePath(). Glide server is now turned into a GlideManager, and cachePath is turned private
+        // Code below does exactly the same as previous. It checks statamic.assets.image_manipulation.cache and returns path
+        $gm = new GlideManager();
+        $cachePath = $gm->shouldServeDirectly()
+            ?Config::get('statamic.assets.image_manipulation.cache_path')
+            : storage_path('statamic/glide');
 
-        $folder = Path::tidy(GlideServer::cachePath().'/containers/'.$asset->containerId().'/'.$asset->path());
+        $folder = Path::tidy($cachePath.'/containers/'.$asset->containerId().'/'.$asset->path());
 
         if (\File::exists($folder)) {
             \File::deleteDirectory($folder);
