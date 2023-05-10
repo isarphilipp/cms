@@ -7,11 +7,13 @@ use Facades\Statamic\Assets\Attributes;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Statamic\Assets\AssetUploader as Uploader;
 use Statamic\Contracts\Assets\Asset as AssetContract;
 use Statamic\Contracts\Assets\AssetContainer as AssetContainerContract;
 use Statamic\Contracts\Data\Augmentable;
 use Statamic\Contracts\Data\Augmented;
 use Statamic\Contracts\Query\ContainsQueryableValues;
+use Statamic\Contracts\Search\Searchable as SearchableContract;
 use Statamic\Data\ContainsData;
 use Statamic\Data\HasAugmentedInstance;
 use Statamic\Data\TracksQueriedColumns;
@@ -29,25 +31,25 @@ use Statamic\Facades\Path;
 use Statamic\Facades\URL;
 use Statamic\Facades\YAML;
 use Statamic\Listeners\UpdateAssetReferences as UpdateAssetReferencesSubscriber;
+use Statamic\Search\Searchable;
 use Statamic\Statamic;
 use Statamic\Support\Arr;
 use Statamic\Support\Str;
 use Statamic\Support\Traits\FluentlyGetsAndSets;
-use Stringy\Stringy;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Mime\MimeTypes;
 
-class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, ContainsQueryableValues
+class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, ContainsQueryableValues, SearchableContract
 {
     use HasAugmentedInstance, FluentlyGetsAndSets, TracksQueriedColumns,
-    TracksQueriedRelations,
-    ContainsData {
-        set as traitSet;
-        get as traitGet;
-        remove as traitRemove;
-        data as traitData;
-        merge as traitMerge;
-    }
+        TracksQueriedRelations,
+        Searchable, ContainsData {
+            set as traitSet;
+            get as traitGet;
+            remove as traitRemove;
+            data as traitData;
+            merge as traitMerge;
+        }
 
     protected $container;
     protected $path;
@@ -678,7 +680,7 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
      */
     public function move($folder, $filename = null)
     {
-        $filename = $this->getSafeFilename($filename ?: $this->filename());
+        $filename = Uploader::getSafeFilename($filename ?: $this->filename());
         $oldPath = $this->path();
         $oldMetaPath = $this->metaPath();
         $newPath = Str::removeLeft(Path::tidy($folder.'/'.$filename.'.'.pathinfo($oldPath, PATHINFO_EXTENSION)), '/');
@@ -691,12 +693,6 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
         $this->disk()->rename($oldPath, $newPath);
         $this->path($newPath);
         $this->save();
-
-        $isFlysystemV1 = method_exists($this->disk()->filesystem()->getDriver(), 'getTimestamp');
-
-        if ($isFlysystemV1) {
-            $this->disk()->delete($this->metaPath());
-        }
 
         $this->disk()->rename($oldMetaPath, $this->metaPath());
 
@@ -914,32 +910,6 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
     }
 
     /**
-     * Ensure safe filename string.
-     *
-     * @param  string  $string
-     * @return string
-     */
-    private function getSafeFilename($string)
-    {
-        $replacements = [
-            ' ' => '-',
-            '#' => '-',
-        ];
-
-        $str = Stringy::create(urldecode($string))->toAscii();
-
-        foreach ($replacements as $from => $to) {
-            $str = $str->replace($from, $to);
-        }
-
-        if (config('statamic.assets.lowercase')) {
-            $str = strtolower($str);
-        }
-
-        return (string) $str;
-    }
-
-    /**
      * Get the asset file contents.
      *
      * @return mixed
@@ -1069,5 +1039,23 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
         }
 
         return $field->fieldtype()->toQueryableValue($value);
+    }
+
+    public function getCpSearchResultBadge(): string
+    {
+        return $this->container()->title();
+    }
+
+    public function warmPresets()
+    {
+        if (! $this->isImage()) {
+            return [];
+        }
+
+        $cpPresets = config('statamic.cp.enabled') ? [
+            'cp_thumbnail_small_'.$this->orientation(),
+        ] : [];
+
+        return array_merge($this->container->warmPresets(), $cpPresets);
     }
 }

@@ -36,18 +36,11 @@ class ResponseFactory implements ResponseFactoryInterface
      */
     public function create($cache, $path)
     {
-        $isFlysystemV1 = method_exists($cache, 'getTimestamp');
-
-        // Determine whether or not to use Flysystem 1.x or 3.x getter methods.
-        $mimeTypeMethod = $isFlysystemV1 ? 'getMimetype' : 'mimeType';
-        $fileSizeMethod = $isFlysystemV1 ? 'getSize' : 'fileSize';
-        $lastModifiedMethod = $isFlysystemV1 ? 'getTimestamp' : 'lastModified';
-
         $stream = $cache->readStream($path);
 
         $response = new StreamedResponse();
-        $response->headers->set('Content-Type', $cache->{$mimeTypeMethod}($path));
-        $response->headers->set('Content-Length', $cache->{$fileSizeMethod}($path));
+        $response->headers->set('Content-Type', $cache->mimeType($path));
+        $response->headers->set('Content-Length', $cache->fileSize($path));
         $response->setPublic();
 
         $expiryAfterSeconds = config('statamic.assets.glide_http_expiry_after_seconds', 31536000);
@@ -56,7 +49,7 @@ class ResponseFactory implements ResponseFactoryInterface
         $response->setExpires(Carbon::now()->addSeconds($expiryAfterSeconds));
 
         if ($this->request) {
-            $response->setLastModified(date_create()->setTimestamp($cache->{$lastModifiedMethod}($path)));
+            $response->setLastModified(date_create()->setTimestamp($cache->lastModified($path)));
             $response->isNotModified($this->request);
         }
 

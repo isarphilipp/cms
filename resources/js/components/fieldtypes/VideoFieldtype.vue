@@ -58,7 +58,9 @@ export default {
             let embed_url = this.data;
 
             if (embed_url.includes('youtube')) {
-                embed_url = embed_url.replace('watch?v=', 'embed/');
+                embed_url = embed_url.includes('shorts/')
+                    ? embed_url.replace('shorts/', 'embed/')
+                    : embed_url.replace('watch?v=', 'embed/');
             }
 
             if (embed_url.includes('youtu.be')) {
@@ -67,6 +69,10 @@ export default {
 
             if (embed_url.includes('vimeo')) {
                 embed_url = embed_url.replace('/vimeo.com', '/player.vimeo.com/video');
+                if (embed_url.split('/').length > 5) {
+                    let hash = embed_url.substr(embed_url.lastIndexOf('/') + 1);
+                    embed_url = embed_url.substr(0, embed_url.lastIndexOf('/')) + '?h=' + hash.replace('?', '&');
+                }
             }
 
             // Make sure additional query parameters are included.
@@ -82,7 +88,7 @@ export default {
         },
 
         isUrl() {
-            let regex = new RegExp('^(https?|ftp)://[^\s/$.?#].[^\s]*$', 'i')
+            let regex = new RegExp('^(https?|ftp):\/\/[^\s/$.?#].*$', 'i')
 
             return regex.test(this.data);
         },
