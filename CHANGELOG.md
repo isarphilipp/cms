@@ -1,5 +1,50 @@
 # Release Notes
 
+## 4.3.0 (2023-05-24)
+
+### What's new
+- Flat Camp! 🏕️ [#8191](https://github.com/statamic/cms/issues/8191) by @jasonvarga
+
+### What's improved
+- Norwegian translations. [#8186](https://github.com/statamic/cms/issues/8186) by @espenlg
+- French translations. [#8178](https://github.com/statamic/cms/issues/8178) by @ebeauchamps
+
+
+
+## 4.2.0 (2023-05-19)
+
+### What's new
+- New addons/fieldtypes use Vite. [#8126](https://github.com/statamic/cms/issues/8126) by @jasonvarga
+- Allow custom searchables to be excluded from CP search. [#7700](https://github.com/statamic/cms/issues/7700) by @jacksleight
+
+### What's improved
+- French translations. [#8169](https://github.com/statamic/cms/issues/8169) by @ebeauchamps
+
+### What's fixed
+- Fix date validation. [#8174](https://github.com/statamic/cms/issues/8174) by @jasonvarga
+- Fix fullscreen mode buttons in Grid and Replicator. [#8168](https://github.com/statamic/cms/issues/8168) by @jasonvarga
+
+
+
+## 4.1.3 (2023-05-17)
+
+### What's improved
+- French translations [#8142](https://github.com/statamic/cms/issues/8142) by @ebeauchamps
+
+### What's fixed
+- Fix margins disappearing in Replicator when hitting max items. [#8164](https://github.com/statamic/cms/issues/8164) by @jasonvarga
+- Fix CP asset reupload not working for non-super users. [#8163](https://github.com/statamic/cms/issues/8163) by @joshuablum
+- Fix suggestable condition fields. [#8160](https://github.com/statamic/cms/issues/8160) by @jasonvarga
+- Fix path for SVG copy icon in the Updater popover. [#8161](https://github.com/statamic/cms/issues/8161) by @joshuablum
+- Fix 404 response status view cascade hydration. [#8159](https://github.com/statamic/cms/issues/8159) by @jesseleite
+- Fix error when exporting starter kit. [#8156](https://github.com/statamic/cms/issues/8156) by @ryanmitchell
+- Fix publishables not getting auto published. [#8151](https://github.com/statamic/cms/issues/8151) by @jasonvarga
+- Fix asset fieldtype min_files validation and the show set alt option. [#8148](https://github.com/statamic/cms/issues/8148) by @jasonvarga
+- Fix missing default field in `color` fieldtype settings. [#8152](https://github.com/statamic/cms/issues/8152) by @jackmcdade
+- Fix visibility of white swatch in the `color` fieldtype. [#8153](https://github.com/statamic/cms/issues/8153) by @mytchallb
+
+
+
 ## 4.1.2 (2023-05-15)
 
 ### What's improved
