@@ -62,7 +62,7 @@
                 "path": "resources/dist-frontend"
             }
         ],
-        "laravel": {4
+        "laravel": {
             "providers": [
                 "Statamic\\Providers\\StatamicServiceProvider"
             ],
