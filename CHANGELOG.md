@@ -1,5 +1,92 @@
 # Release Notes
 
+## 4.10.0 (2023-07-05)
+
+### What's new
+- Added `sanitize` param to the `svg` tag. [#8408](https://github.com/statamic/cms/issues/8408) by @jasonvarga
+
+### What's improved
+- French translations. [#8388](https://github.com/statamic/cms/issues/8388) by @ebeauchamps
+
+### What's fixed
+- Bring back the password reset link for non-OAuth sites. [#8396](https://github.com/statamic/cms/issues/8396) by @jackmcdade
+- Add some missing translation calls. [#8387](https://github.com/statamic/cms/issues/8387) by @ebeauchamps
+
+
+
+## 4.9.2 (2023-06-30)
+
+### What's fixed
+- Fix search index not being used in the entries fieldtype. [#8253](https://github.com/statamic/cms/issues/8253) by @ryanmitchell
+- Fix Antlers Profiler memory issue. [#8384](https://github.com/statamic/cms/issues/8384) by @JohnathonKoster
+- Fix `search:results` duplicated code, and pagination parameter types. [#8314](https://github.com/statamic/cms/issues/8314) by @ryanmitchell
+- Fix missing `lowercase` validation message. [#8383](https://github.com/statamic/cms/issues/8383) by @marcorieser
+- Fix `user:profile_form` not catching certain validation rules. [#8264](https://github.com/statamic/cms/issues/8264) by @ryanmitchell
+- Fix Antlers Profilder depth and disabled layout logic. [#8368](https://github.com/statamic/cms/issues/8368) by @JohnathonKoster
+- Fix bottom margin on a section fieldtype when no instructions are present. [#8371](https://github.com/statamic/cms/issues/8371) by @martyf
+- Fix `toggle` fields collapsing too far and not wrapping instructions in sidebars. [#8366](https://github.com/statamic/cms/issues/8366) by @jackmcdade
+- Fix Grid field instructions tooltip not rendering as HTML properly. [#8367](https://github.com/statamic/cms/issues/8367) by @jackmcdade
+- Switch StyleCI with Pint. Apply Pint code style fixes. [#8310](https://github.com/statamic/cms/issues/8310) by @jasonvarga
+- Remove some Laravel 8 specific code. [#8385](https://github.com/statamic/cms/issues/8385) by @jesseleite
+
+
+
+## 4.9.1 (2023-06-27)
+
+### What's fixed
+- Fix visibility of Cache FileStore path method. [#8365](https://github.com/statamic/cms/issues/8365) by @jasonvarga
+- Adjust how Antlers Profiler handles larger amounts of data to prevent JS errors. [#8358](https://github.com/statamic/cms/issues/8358) by @JohnathonKoster
+
+
+
+## 4.9.0 (2023-06-26)
+
+### What's new
+- Add setting to disable Antlers profiler. [#8356](https://github.com/statamic/cms/issues/8356) by @jasonvarga
+- Add Spacer fieldtype. [#8326](https://github.com/statamic/cms/issues/8326) by @aerni
+- Add `is_external_url` modifer. [#8351](https://github.com/statamic/cms/issues/8351) by @martyf
+- Entry data values can be queried directly for efficiency. [#7371](https://github.com/statamic/cms/issues/7371) by @ryanmitchell
+
+### What's improved
+- Use Blink Cache for flattened pages in Collection Structure. [#7476](https://github.com/statamic/cms/issues/7476) by @o1y
+- French translations. [#8348](https://github.com/statamic/cms/issues/8348) by @ebeauchamps
+
+### What's fixed
+- Fix links within Bard fields not being localized. [#8319](https://github.com/statamic/cms/issues/8319) by @modrictin
+- Fix checkboard background on asset tiles. [#8355](https://github.com/statamic/cms/issues/8355) by @jackmcdade
+- Fix relationship fieldtype encoding issue. [#8349](https://github.com/statamic/cms/issues/8349) by @zsoltjanes
+
+
+
+## 4.8.0 (2023-06-23)
+
+### What's new
+- Antlers performance profiler tab for Debugbar. [#8323](https://github.com/statamic/cms/issues/8323) by @JohnathonKoster
+- User Groups may have a blueprint to allow for custom fields. [#6506](https://github.com/statamic/cms/issues/6506) by @ryanmitchell
+- Arrays can be passed to the `user_groups` tag. [#8336](https://github.com/statamic/cms/issues/8336) by @ryanmitchell
+- Added `cpDownloadUrl` method to the `Asset` class. [#8334](https://github.com/statamic/cms/issues/8334) by @jonassiewertsen
+
+### What's fixed
+- Fix missing GraphQL types for more complex fields (e.g. Grid) in user blueprints. [#8335](https://github.com/statamic/cms/issues/8335) by @jesseleite
+
+
+
+## 4.7.0 (2023-06-20)
+
+### What's new
+- Debugbar support for Antlers. [#8296](https://github.com/statamic/cms/issues/8296) by @JohnathonKoster
+- Allow sorting user listing by last login, and hide arrows for unsortable columns. [#8283](https://github.com/statamic/cms/issues/8283) by @jacksleight
+- Allow icon fieldtype to output CP icons. [#8306](https://github.com/statamic/cms/issues/8306) by @jackmcdade
+
+### What's fixed
+- Forgot password link is available with OAuth. [#8330](https://github.com/statamic/cms/issues/8330) by @jasonvarga
+- Fix stache lock config comment. [#8293](https://github.com/statamic/cms/issues/8293) by @SimJoSt
+- Fix overly strict comparisons in Antlers. [#8327](https://github.com/statamic/cms/issues/8327) by @JohnathonKoster
+- Check previous URL for preserving Live Preview iframe scroll. [#7769](https://github.com/statamic/cms/issues/7769) by @GioChocolateBro
+- Fix aspect ratio in video fieldtype. [#8302](https://github.com/statamic/cms/issues/8302) by @jackmcdade
+
+
+
 ## 4.6.0 (2023-06-07)
 
 ### What's new

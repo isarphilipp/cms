@@ -18,9 +18,6 @@ class GeneratePresetImageManipulations implements ShouldQueue
      */
     private $generator;
 
-    /**
-     * @param  PresetGenerator  $generator
-     */
     public function __construct(PresetGenerator $generator)
     {
         $this->generator = $generator;
