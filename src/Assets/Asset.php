@@ -847,7 +847,7 @@ class Asset implements AssetContract, Augmentable, ArrayAccess, Arrayable, Conta
     public function upload(UploadedFile $file)
     {
         $ext = $file->getClientOriginalExtension();
-        $filename = AssetUploader::getSafeFilename(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $filename = Uploader::getSafeFilename(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
 
         $directory = $this->folder();
         $directory = ($directory === '.') ? '/' : $directory;
