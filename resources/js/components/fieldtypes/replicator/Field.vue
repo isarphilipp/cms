@@ -2,7 +2,7 @@
 
     <div class="p-4 m-0 @container" :class="classes">
 
-        <label class="block" v-if="showLabel">
+        <label class="block" :for="fieldId" v-if="showLabel">
             <span v-if="showLabelText">{{ display }}</span>
             <i class="required" v-if="field.required">*</i>
             <span v-if="isReadOnly" class="text-gray-500 font-normal text-2xs mx-1" v-text="__('Read Only')" />
@@ -23,6 +23,7 @@
             :field-path-prefix="fieldPath"
             :has-error="hasError || hasNestedError"
             :read-only="isReadOnly"
+            :show-field-previews="showFieldPreviews"
             @input="$emit('updated', $event)"
             @meta-updated="$emit('meta-updated', $event)"
             @focus="$emit('focus')"
@@ -69,6 +70,7 @@ export default {
             type: String
         },
         readOnly: Boolean,
+        showFieldPreviews: Boolean,
     },
 
     inject: ['storeName'],
@@ -84,12 +86,12 @@ export default {
         },
 
         display() {
-            return this.field.display || this.field.handle[0].toUpperCase() + this.field.handle.slice(1)
+            return __(this.field.display || this.field.handle[0].toUpperCase() + this.field.handle.slice(1))
         },
 
         instructions() {
             return this.field.instructions
-                ? this.$options.filters.markdown(this.field.instructions)
+                ? this.$options.filters.markdown(__(this.field.instructions))
                 : null
         },
 
@@ -134,6 +136,11 @@ export default {
 
         showLabelText() {
             return !this.field.hide_display;
+        },
+
+        fieldId() {
+            let prefix = this.fieldPath ? this.fieldPath+'.' : '';
+            return prefix+'field_'+this.field.handle;
         }
 
     }
