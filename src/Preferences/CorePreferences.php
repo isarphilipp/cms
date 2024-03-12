@@ -19,6 +19,7 @@ class CorePreferences
                 'de_CH' => 'German (Switzerland)',
                 'en' => 'English',
                 'es' => 'Spanish',
+                'fa' => 'Persian',
                 'fr' => 'French',
                 'hu' => 'Hungarian',
                 'id' => 'Indonesian',
@@ -59,7 +60,7 @@ class CorePreferences
                 [
                     'handle' => 'url',
                     'field' => [
-                        'display' => 'URL',
+                        'display' => __('URL'),
                         'type' => 'text',
                     ],
                 ],
