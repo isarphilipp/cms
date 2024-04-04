@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Vite;
 use Laravel\Nova\Nova;
 use Statamic\Facades\File;
 use Statamic\Facades\Preference;
@@ -24,6 +25,7 @@ class Statamic
 
     protected static $scripts = [];
     protected static $externalScripts = [];
+    protected static $inlineScripts = [];
     protected static $styles = [];
     protected static $externalStyles = [];
     protected static $vites = [];
@@ -81,6 +83,18 @@ class Statamic
         static::$externalScripts[] = $url;
 
         return new static;
+    }
+
+    public static function inlineScript($html)
+    {
+        static::$inlineScripts[] = $html;
+
+        return new static;
+    }
+
+    public static function availableInlineScripts(Request $request)
+    {
+        return static::$inlineScripts;
     }
 
     public static function availableStyles(Request $request)
@@ -269,6 +283,26 @@ class Statamic
         return static::vendorPackageAssetUrl('statamic/cp', $url);
     }
 
+    public static function cpViteAsset($asset)
+    {
+        return static::cpVite()->asset('resources/'.$asset);
+    }
+
+    public static function cpViteScripts()
+    {
+        return static::cpVite()->withEntryPoints([
+            'resources/js/app.js',
+            'resources/css/tailwind.css',
+        ]);
+    }
+
+    private static function cpVite()
+    {
+        return Vite::getFacadeRoot()
+            ->useHotFile('vendor/statamic/cp/hot')
+            ->useBuildDirectory('vendor/statamic/cp/build');
+    }
+
     public static function cpDateFormat()
     {
         return Preference::get('date_format', config('statamic.cp.date_format'));
@@ -426,5 +460,17 @@ class Statamic
 
             return $path;
         });
+    }
+
+    public static function cpLocale(): string
+    {
+        return config('app.locale');
+    }
+
+    public static function cpDirection()
+    {
+        $rtl = ['ar', 'fa', 'he', 'ps', 'ur'];
+
+        return in_array(static::cpLocale(), $rtl) ? 'rtl' : 'ltr';
     }
 }

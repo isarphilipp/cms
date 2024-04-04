@@ -22,7 +22,7 @@ class ResponseFactory implements ResponseFactoryInterface
      *
      * @param  Request|null  $request  Request object to check "is not modified".
      */
-    public function __construct(Request $request = null)
+    public function __construct(?Request $request = null)
     {
         $this->request = $request;
     }
