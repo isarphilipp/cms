@@ -172,9 +172,18 @@ class ViewServiceProvider extends ServiceProvider
         });
     }
 
+    public function registerBladeDirectives()
+    {
+        Blade::directive('tags', function ($expression) {
+            return "<?php extract(\Statamic\View\Blade\TagsDirective::handle($expression)) ?>";
+        });
+    }
+
     public function boot()
     {
         ViewFactory::addNamespace('compiled__views', storage_path('framework/views'));
+
+        $this->registerBladeDirectives();
 
         Blade::precompiler(function ($content) {
             return AntlersBladePrecompiler::compile($content);
