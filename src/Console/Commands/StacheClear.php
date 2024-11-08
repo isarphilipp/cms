@@ -31,6 +31,8 @@ class StacheClear extends Command
      */
     public function handle()
     {
+        \Partyline::bind($this);
+        
         Stache::clear();
 
         $this->info('You have trimmed the Stache. It looks dashing.');
