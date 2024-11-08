@@ -93,7 +93,12 @@ class Stache
 
         StacheClearing::dispatch($this);
 
-        $this->stores()->reverse()->each->clear();
+        $this->stores()->reverse()->each(function ($store) {
+            $start = microtime(true);
+            $store->clear();
+            $time = microtime(true) - $start;
+            Partyline::comment("Cleared store {$store->key()} in " . round($time * 1000, 2) . "ms");
+        });
 
         $this->duplicates()->clear();
 
