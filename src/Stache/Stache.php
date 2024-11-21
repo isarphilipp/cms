@@ -99,8 +99,13 @@ class Stache
             $time = microtime(true) - $start;
             Partyline::comment("Cleared store {$store->key()} in " . round($time * 1000, 2) . "ms");
         });
+        $start = microtime(true);
 
         $this->duplicates()->clear();
+        
+        $time = microtime(true) - $start;
+
+        Partyline::comment("Duplicates measured: " . round($time * 1000, 2) . "ms");
 
         Cache::forget('stache::timing');
 
