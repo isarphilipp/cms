@@ -152,11 +152,11 @@ class Stache
 
         $this->stopTimer();
 
-        StacheWarmed::dispatch($this);
 
         $lock->release();
 
-        StacheWarmed::dispatch();
+        StacheWarmed::dispatch($this);
+
     }
 
     public function instance()
