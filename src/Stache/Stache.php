@@ -17,6 +17,7 @@ use Statamic\Stache\Stores\Store;
 use Statamic\Support\Str;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
+use Wilderborn\Partyline\Facade as Partyline;
 
 class Stache
 {
