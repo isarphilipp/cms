@@ -156,6 +156,10 @@ abstract class Tree implements Contract, Localization
 
     public function save()
     {
+        if ($this->dispatchSavingEvent() === false) {
+            return false;
+        }
+
         $this->cachedFlattenedPages = null;
 
         Blink::forget('collection-structure-flattened-pages-collection*');
@@ -166,6 +170,8 @@ abstract class Tree implements Contract, Localization
         $this->dispatchSavedEvent();
 
         $this->syncOriginal();
+
+        return true;
     }
 
     public function delete()
@@ -186,6 +192,11 @@ abstract class Tree implements Contract, Localization
         //
     }
 
+    protected function dispatchSavingEvent()
+    {
+        //
+    }
+
     protected function dispatchDeletedEvent()
     {
         //
@@ -201,7 +212,7 @@ abstract class Tree implements Contract, Localization
     protected function removeEmptyChildren($array)
     {
         return collect($array)->map(function ($item) {
-            $item['children'] = $this->removeEmptyChildren(array_get($item, 'children', []));
+            $item['children'] = $this->removeEmptyChildren(Arr::get($item, 'children', []));
 
             if (empty($item['children'])) {
                 unset($item['children']);
@@ -215,7 +226,7 @@ abstract class Tree implements Contract, Localization
     {
         $params = [];
 
-        if (Site::hasMultiple()) {
+        if (Site::multiEnabled()) {
             $params['site'] = $this->locale();
         }
 

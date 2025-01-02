@@ -2,16 +2,16 @@
 
     <div :class="sortableItemClass">
         <slot name="picker" />
-        <div class="replicator-set" :class="{ 'has-error': this.hasError }">
+        <div class="replicator-set" :class="{ 'has-error': this.hasError }" :data-type="config.handle">
 
             <div class="replicator-set-header" :class="{ 'p-2': isReadOnly, 'collapsed': collapsed, 'invalid': isInvalid }">
                 <div class="item-move sortable-handle" :class="sortableHandleClass" v-if="!isReadOnly"></div>
                 <div class="flex items-center flex-1 p-2 replicator-set-header-inner cursor-pointer" :class="{'flex items-center': collapsed}" @click="toggleCollapsedState">
-                    <label class="text-xs whitespace-nowrap rtl:ml-2 ltr:mr-2 cursor-pointer">
-                        <template v-if="replicatorSets.length > 1">
-                            {{ setGroup.display }}
+                    <label class="text-xs rtl:ml-2 ltr:mr-2 cursor-pointer">
+                        <span v-if="isSetGroupVisible">
+                            {{ __(setGroup.display) }}
                             <svg-icon name="micro/chevron-right" class="w-4" />
-                        </template>
+                        </span>
                         {{ display || config.handle }}
                     </label>
                     <div class="flex items-center" v-if="config.instructions && !collapsed">
@@ -31,6 +31,8 @@
                         :value="values.enabled"
                         v-tooltip.top="(values.enabled) ? __('Included in output') : __('Hidden from output')" />
                     <dropdown-list>
+                        <dropdown-actions :actions="fieldActions" v-if="fieldActions.length" />
+                        <div class="divider" />
                         <dropdown-item :text="__(collapsed ? __('Expand Set') : __('Collapse Set'))" @click="toggleCollapsedState" />
                         <dropdown-item :text="__('Duplicate Set')" @click="duplicate" v-if="canAddSet" />
                         <dropdown-item :text="__('Delete Set')" class="warning" @click="destroy" />
@@ -77,14 +79,20 @@
 import SetField from './Field.vue';
 import ManagesPreviewText from './ManagesPreviewText';
 import { ValidatesFieldConditions } from '../../field-conditions/FieldConditions.js';
+import HasFieldActions from '../../field-actions/HasFieldActions.js';
+import DropdownActions from '../../field-actions/DropdownActions.vue';
 
 export default {
 
-    components: { SetField },
+    components: { SetField, DropdownActions },
 
-    mixins: [ValidatesFieldConditions, ManagesPreviewText],
+    mixins: [
+        ValidatesFieldConditions,
+        ManagesPreviewText,
+        HasFieldActions,
+    ],
 
-    inject: ['replicatorSets'],
+    inject: ['replicatorSets', 'storeName'],
 
     props: {
         config: {
@@ -157,6 +165,8 @@ export default {
         },
 
         setGroup() {
+            if (this.replicatorSets.length < 1) return null;
+
             return this.replicatorSets.find((group) => {
                 return group.sets.filter((set) => set.handle === this.config.handle).length > 0;
             });
@@ -166,12 +176,41 @@ export default {
             return this.fields.length > 1;
         },
 
+        isSetGroupVisible() {
+            return this.replicatorSets.length > 1 && this.setGroup?.display;
+        },
+
         isHidden() {
             return this.values['#hidden'] === true;
         },
 
         isInvalid() {
             return Object.keys(this.config).length === 0;
+        },
+
+        fieldVm() {
+            let vm = this;
+            while (vm !== vm.$root) {
+                if (vm.$options.name === 'replicator-fieldtype') return vm;
+                vm = vm.$parent;
+            }
+        },
+
+        fieldActionPayload() {
+            return {
+                vm: this,
+                fieldVm: this.fieldVm,
+                fieldPathPrefix: this.fieldPathPrefix,
+                index: this.index,
+                values: this.values,
+                config: this.config,
+                meta: this.meta,
+                update: (handle, value) => this.updated(handle, value),
+                updateMeta: (handle, value) => this.metaUpdated(handle, value),
+                isReadOnly: this.isReadOnly,
+                store: this.$store,
+                storeName: this.storeName,
+            };
         },
 
     },

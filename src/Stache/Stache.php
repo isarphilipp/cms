@@ -6,10 +6,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Statamic\Events\StacheCleared;
+use Statamic\Events\StacheWarmed;
 use Statamic\Events\StacheClearing;
 use Statamic\Events\StacheRefreshed;
 use Statamic\Events\StacheRefreshing;
-use Statamic\Events\StacheWarmed;
 use Statamic\Events\StacheWarming;
 use Statamic\Extensions\FileStore;
 use Statamic\Facades\File;
@@ -17,7 +17,6 @@ use Statamic\Stache\Stores\Store;
 use Statamic\Support\Str;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
-use Wilderborn\Partyline\Facade as Partyline;
 
 class Stache
 {
@@ -71,6 +70,11 @@ class Stache
         return $this->stores;
     }
 
+    public function cacheStore()
+    {
+        return Cache::store(config('statamic.stache.cache_store'));
+    }
+
     public function store($key)
     {
         if (Str::contains($key, '::')) {
@@ -102,7 +106,7 @@ class Stache
         $start = microtime(true);
 
         $this->duplicates()->clear();
-        
+
         $time = microtime(true) - $start;
 
         Partyline::comment("Duplicates measured: " . round($time * 1000, 2) . "ms");
@@ -139,11 +143,7 @@ class Stache
 
     public function warm()
     {
-        Partyline::comment('Warming Stache...');
-
-        $lock = tap($this->lock('stache-updating'))->acquire(true);
-
-        StacheWarming::dispatch($this);
+        $lock = tap($this->lock('stache-warming'))->acquire(true);
 
         $this->startTimer();
 
@@ -154,6 +154,8 @@ class Stache
         StacheWarmed::dispatch($this);
 
         $lock->release();
+
+        StacheWarmed::dispatch();
     }
 
     public function instance()
@@ -194,7 +196,7 @@ class Stache
             return $this;
         }
 
-        Cache::forever('stache::timing', [
+        $this->cacheStore()->forever('stache::timing', [
             'time' => floor((microtime(true) - $this->startTime) * 1000),
             'date' => Carbon::now()->timestamp,
         ]);
@@ -204,12 +206,12 @@ class Stache
 
     public function buildTime()
     {
-        return Cache::get('stache::timing')['time'] ?? null;
+        return $this->cacheStore()->get('stache::timing')['time'] ?? null;
     }
 
     public function buildDate()
     {
-        if (! $cache = Cache::get('stache::timing')) {
+        if (! $cache = $this->cacheStore()->get('stache::timing')) {
             return null;
         }
 
@@ -251,5 +253,14 @@ class Stache
         }
 
         return $this->duplicates = (new Duplicates($this))->load();
+    }
+
+    public function isWatcherEnabled(): bool
+    {
+        $config = config('statamic.stache.watcher');
+
+        return $config === 'auto'
+            ? app()->isLocal()
+            : (bool) $config;
     }
 }

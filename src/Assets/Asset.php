@@ -7,6 +7,7 @@ use Facades\Statamic\Assets\Attributes;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use League\Flysystem\PathTraversalDetected;
 use Statamic\Assets\AssetUploader as Uploader;
 use Statamic\Contracts\Assets\Asset as AssetContract;
 use Statamic\Contracts\Assets\AssetContainer as AssetContainerContract;
@@ -367,6 +368,13 @@ class Asset implements Arrayable, ArrayAccess, AssetContract, Augmentable, Conta
     {
         return $this
             ->fluentlyGetOrSet('path')
+            ->setter(function ($path) {
+                if (str_contains($path, '../')) {
+                    throw PathTraversalDetected::forPath($path);
+                }
+
+                return $path;
+            })
             ->getter(function ($path) {
                 return $path ? ltrim($path, '/') : null;
             })
@@ -488,7 +496,7 @@ class Asset implements Arrayable, ArrayAccess, AssetContract, Augmentable, Conta
      */
     public function isImage()
     {
-        return $this->extensionIsOneOf(['jpg', 'jpeg', 'png', 'gif', 'webp']);
+        return $this->extensionIsOneOf(['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif']);
     }
 
     /**
@@ -636,13 +644,28 @@ class Asset implements Arrayable, ArrayAccess, AssetContract, Augmentable, Conta
     }
 
     /**
+     * Delete quietly without firing events.
+     *
+     * @return bool
+     */
+    public function deleteQuietly()
+    {
+        $this->withEvents = false;
+
+        return $this->delete();
+    }
+
+    /**
      * Delete the asset.
      *
      * @return $this
      */
     public function delete()
     {
-        if (AssetDeleting::dispatch($this) === false) {
+        $withEvents = $this->withEvents;
+        $this->withEvents = true;
+
+        if ($withEvents && AssetDeleting::dispatch($this) === false) {
             return false;
         }
 
@@ -653,7 +676,9 @@ class Asset implements Arrayable, ArrayAccess, AssetContract, Augmentable, Conta
 
         $this->clearCaches();
 
-        AssetDeleted::dispatch($this);
+        if ($withEvents) {
+            AssetDeleted::dispatch($this);
+        }
 
         return $this;
     }
@@ -661,7 +686,7 @@ class Asset implements Arrayable, ArrayAccess, AssetContract, Augmentable, Conta
     /**
      * Clear meta and filesystem listing caches.
      */
-    private function clearCaches()
+    protected function clearCaches()
     {
         $this->meta = null;
         Cache::forget($this->metaCacheKey());
@@ -1063,7 +1088,7 @@ class Asset implements Arrayable, ArrayAccess, AssetContract, Augmentable, Conta
 
     public function shallowAugmentedArrayKeys()
     {
-        return ['id', 'url', 'permalink', 'api_url'];
+        return ['id', 'url', 'permalink', 'api_url', 'alt'];
     }
 
     protected function defaultAugmentedRelations()
@@ -1071,12 +1096,12 @@ class Asset implements Arrayable, ArrayAccess, AssetContract, Augmentable, Conta
         return $this->selectedQueryRelations;
     }
 
-    private function hasDimensions()
+    public function hasDimensions()
     {
         return $this->isImage() || $this->isSvg() || $this->isVideo();
     }
 
-    private function hasDuration()
+    public function hasDuration()
     {
         return $this->isAudio() || $this->isVideo();
     }

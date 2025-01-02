@@ -4,14 +4,36 @@ namespace Tests\StaticCaching;
 
 use Illuminate\Support\Facades\Cache;
 use Mockery;
+use PHPUnit\Framework\Attributes\Test;
 use Statamic\Facades\StaticCache;
 use Statamic\StaticCaching\Cacher;
 use Tests\TestCase;
 
 class ManagerTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_flushes()
+    {
+        config([
+            'statamic.static_caching.strategy' => 'test',
+            'statamic.static_caching.strategies.test.driver' => 'test',
+            'cache.stores.static_cache' => [
+                'driver' => 'file',
+                'path' => storage_path('statamic/static-urls-cache'),
+            ],
+        ]);
+
+        $mock = Mockery::mock(Cacher::class)->shouldReceive('flush')->once()->getMock();
+        StaticCache::extend('test', fn () => $mock);
+
+        Cache::shouldReceive('store')->andReturnSelf();
+        Cache::shouldReceive('flush')->once();
+
+        StaticCache::flush();
+    }
+
+    #[Test]
+    public function it_flushes_without_static_cache_store()
     {
         config([
             'statamic.static_caching.strategy' => 'test',

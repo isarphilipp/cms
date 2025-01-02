@@ -3,6 +3,7 @@
 namespace Statamic\Tags;
 
 use Illuminate\Support\Traits\Macroable;
+use Statamic\Contracts\View\TagRenderer;
 use Statamic\Extend\HasAliases;
 use Statamic\Extend\HasHandle;
 use Statamic\Extend\RegistersItself;
@@ -85,14 +86,21 @@ abstract class Tags
      */
     protected $wildcardHandled;
 
+    /**
+     * A custom tag renderer that may be used when no Antlers parser is available.
+     *
+     * @var TagRenderer|null
+     */
+    protected $tagRenderer;
+
     public function setProperties($properties)
     {
         $this->setParser($properties['parser']);
         $this->setContent($properties['content']);
         $this->setContext($properties['context']);
         $this->setParameters($properties['params']);
-        $this->tag = array_get($properties, 'tag');
-        $this->method = array_get($properties, 'tag_method');
+        $this->tag = Arr::get($properties, 'tag');
+        $this->method = Arr::get($properties, 'tag_method');
 
         $this->runHooks('init');
     }
@@ -124,6 +132,32 @@ abstract class Tags
         $this->params = Parameters::make($parameters, $this->context);
 
         return $this;
+    }
+
+    public function setTagRenderer($tagRenderer)
+    {
+        $this->tagRenderer = $tagRenderer;
+
+        return $this;
+    }
+
+    protected function templatingLanguage()
+    {
+        if ($this->tagRenderer) {
+            return $this->tagRenderer->getLanguage();
+        }
+
+        return 'antlers';
+    }
+
+    protected function isAntlersBladeComponent()
+    {
+        return $this->templatingLanguage() === 'blade';
+    }
+
+    protected function canParseContents()
+    {
+        return $this->parser != null || $this->tagRenderer != null;
     }
 
     /**
@@ -165,6 +199,10 @@ abstract class Tags
         }
 
         if (! $this->parser) {
+            if ($this->tagRenderer) {
+                return $this->tagRenderer->render($this->content, array_merge($this->context->all(), $data));
+            }
+
             return $data;
         }
 
@@ -173,6 +211,15 @@ abstract class Tags
                 ->parse($this->content, array_merge($this->context->all(), $data))
                 ->withoutExtractions();
         });
+    }
+
+    protected function aliasedResult($data)
+    {
+        if ($as = $this->params->get('as')) {
+            return [$as => $data];
+        }
+
+        return $data;
     }
 
     /**
