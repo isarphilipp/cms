@@ -58,11 +58,11 @@
     "extra": {
         "download-dist": [
             {
-                "url": "https://github.com/statamic/cms/releases/download/v4.53.2/dist.tar.gz",
+                "url": "https://github.com/statamic/cms/releases/download/v5.45.0/dist.tar.gz",
                 "path": "resources/dist"
             },
             {
-                "url": "https://github.com/statamic/cms/releases/download/v4.53.2/dist-frontend.tar.gz",
+                "url": "https://github.com/statamic/cms/releases/download/v5.45.0/dist-frontend.tar.gz",
                 "path": "resources/dist-frontend"
             }
         ],
