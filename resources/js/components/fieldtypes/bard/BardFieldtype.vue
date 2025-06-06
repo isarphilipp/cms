@@ -192,7 +192,8 @@ export default {
                 bard: this.makeBardProvide(),
                 storeName: this.storeName,
                 bardSets: this.config.sets
-            }
+            },
+            isAddingSet: false
         }
     },
 
@@ -410,13 +411,13 @@ export default {
 
         json(json, oldJson) {
             if (!this.mounted) return;
-                        
+
             if (json === oldJson) return;
 
             this.updateDebounced(json);
         },
 
-        value(value, oldValue) {    
+        value(value, oldValue) {
             const oldContent = this.editor.getJSON();
             const content = this.valueToContent(value);
 
@@ -670,7 +671,7 @@ export default {
                     // blur event immediately. We need to make sure that the newly focused element is outside
                     // of Bard. We use a timeout because activeElement only exists after the blur event.
                     setTimeout(() => {
-                        if (!this.$refs.container.contains(document.activeElement)) {
+                        if (!this.isAddingSet && !this.$refs.container.contains(document.activeElement)) {
                             this.$emit('blur');
                             this.showAddSetButton = false;
                         }
@@ -854,6 +855,8 @@ export default {
         },
 
         addSetButtonClicked() {
+            this.isAddingSet = true;
+
             if (this.setConfigs.length === 1) {
                 this.addSet(this.setConfigs[0].handle);
             }
@@ -862,8 +865,8 @@ export default {
         clickedAwayFromSetPicker($event) {
             if (this.$el.contains($event.target)) return;
             this.showAddSetButton = false;
+            this.isAddingSet = false;
         },
-
     }
 }
 </script>
