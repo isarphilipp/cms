@@ -610,7 +610,7 @@ export default {
                         this.trackDirtyState = false
                         this.values = this.resetValuesFromResponse(response.data.data.values);
                         this.extraValues = response.data.data.extraValues;
-                        this.trackDirtyStateTimeout = setTimeout(() => (this.trackDirtyState = true), 2500)
+                        this.trackDirtyStateTimeout = setTimeout(() => (this.trackDirtyState = true), 750)
                         this.$nextTick(() => this.$emit('saved', response));
                         return;
                     }
@@ -879,7 +879,7 @@ export default {
         this.$nextTick(() => {
             setTimeout(() => {
                 this.trackDirtyState = true;
-            }, 2500);
+            }, 750);
         });
 
         this.saveKeyBinding = this.$keys.bindGlobal(['mod+return'], e => {
