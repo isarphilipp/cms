@@ -195,6 +195,11 @@ export default {
         },
 
         setAsset(asset) {
+            if (!asset) {
+                this.loading = false;
+                return;
+            }
+
             this.editorAsset = asset;
             this.assetId = asset.id;
             this.assetAlt = asset.values.alt;
