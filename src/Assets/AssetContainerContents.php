@@ -4,6 +4,7 @@ namespace Statamic\Assets;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use League\Flysystem\DirectoryListing;
 use Statamic\Facades\Stache;
 use Statamic\Statamic;
@@ -36,11 +37,21 @@ class AssetContainerContents
         }
 
         return $this->files = Cache::remember($this->key(), $this->ttl(), function () {
-            return collect($this->getRawFlysystemDirectoryListing())
+            $start = microtime(true);
+            $startMemory = memory_get_usage();
+
+            $work = collect($this->getRawFlysystemDirectoryListing())
                 ->keyBy('path')
                 ->map(fn ($file) => $this->normalizeFlysystemAttributes($file))
                 ->pipe(fn ($files) => $this->ensureMissingDirectoriesExist($files))
                 ->sortKeys();
+
+            $duration = round(microtime(true) - $start, 2);
+            $usedMemory = round((memory_get_usage() - $startMemory) / 1024 / 1024, 2); // MB
+
+            Log::info('AssetContainerContents::all - File count: ' . $work->count() . ', Duration: ' . $duration . 's, Memory: ' . $usedMemory . 'MB');
+
+            return $work;
         });
     }
 
