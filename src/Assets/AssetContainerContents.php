@@ -38,7 +38,6 @@ class AssetContainerContents
 
         return $this->files = Cache::remember($this->key(), $this->ttl(), function () {
             $start = microtime(true);
-            $startMemory = memory_get_usage();
 
             $work = collect($this->getRawFlysystemDirectoryListing())
                 ->keyBy('path')
@@ -47,9 +46,8 @@ class AssetContainerContents
                 ->sortKeys();
 
             $duration = round(microtime(true) - $start, 2);
-            $usedMemory = round((memory_get_usage() - $startMemory) / 1024 / 1024, 2); // MB
 
-            Log::info('AssetContainerContents::all - File count: ' . $work->count() . ', Duration: ' . $duration . 's, Memory: ' . $usedMemory . 'MB');
+            Log::info('AssetContainerContents::all - Duration: ' . $duration . 's, ');
 
             return $work;
         });
