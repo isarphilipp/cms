@@ -24,6 +24,11 @@ class AssetContainerContents
         return $this;
     }
 
+    protected function cacheDriver()
+    {
+        return config('cache.statamic_asset_container_contents_cache_driver') ?? config('cache.default');
+    }
+
     /**
      * Get all asset container contents.
      *
@@ -35,19 +40,33 @@ class AssetContainerContents
             return $this->files;
         }
 
-        return $this->files = Cache::remember($this->key(), $this->ttl(), function () {
-            return collect($this->getRawFlysystemDirectoryListing())
-                ->keyBy('path')
-                ->map(fn ($file) => $this->normalizeFlysystemAttributes($file))
-                ->pipe(fn ($files) => $this->ensureMissingDirectoriesExist($files))
-                ->sortKeys();
-        });
+        return $this->files = Cache::driver($this->cacheDriver())
+            ->remember($this->key(), $this->ttl(), function () {
+                return $this->generateAllItemsForCaching();
+            });
+    }
+
+    protected function generateAllItemsForCaching(){
+        return collect($this->getRawFlysystemDirectoryListing())
+            ->keyBy('path')
+            ->map(fn ($file) => $this->normalizeFlysystemAttributes($file))
+            ->pipe(fn ($files) => $this->ensureMissingDirectoriesExist($files))
+            ->sortKeys();
+    }
+
+    // This was added because we had to invalidate the cache on our own, without doing the forget.
+    // this cache is rebuilt for few minutes, and if we allow requests to rebuild it, we will get a cache stampede.
+    // The cache would be cleared, we would get 1000 requests, and everyone would start rebuilding the cache. Crashing the server.
+    public function rebuildCache()
+    {
+        Cache::driver($this->cacheDriver())
+            ->put($this->key(),$this->generateAllItemsForCaching(), $this->ttl());
     }
 
     /**
      * Flysystem's `DirectoryListing` gives us type, timestamps, dirname, and will allow us perform more efficient filtering, caching, etc.
      */
-    private function getRawFlysystemDirectoryListing(): DirectoryListing
+    protected function getRawFlysystemDirectoryListing(): DirectoryListing
     {
         return $this->filesystem()->listContents('/', true);
     }
@@ -58,7 +77,7 @@ class AssetContainerContents
      * @param  mixed  $attributes
      * @return array
      */
-    private function normalizeFlysystemAttributes($attributes)
+    protected function normalizeFlysystemAttributes($attributes)
     {
         // Merge attributes with `pathinfo()`.
         $normalized = array_merge([
@@ -87,7 +106,7 @@ class AssetContainerContents
      * this method ensures we get consistent results with S3 filesystems.
      * For more info, see: https://github.com/statamic/cms/pull/7205
      */
-    private function ensureMissingDirectoriesExist(Collection $files): Collection
+    protected function ensureMissingDirectoriesExist(Collection $files): Collection
     {
         $files
             ->filter(fn ($item) => $item['type'] === 'file')
@@ -120,7 +139,7 @@ class AssetContainerContents
      * @param  string  $path
      * @return array
      */
-    private function getNormalizedFlysystemMetadata($path)
+    protected function getNormalizedFlysystemMetadata($path)
     {
         // Use exception handling to avoid another `has()` API method call if possible.
         try {
@@ -164,7 +183,7 @@ class AssetContainerContents
 
     public function cached()
     {
-        return Cache::get($this->key());
+        return Cache::driver($this->cacheDriver())->get($this->key());
     }
 
     public function files()
@@ -264,14 +283,14 @@ class AssetContainerContents
         return $this->filteredDirectories[$key] = $files;
     }
 
-    private function filesystem()
+    protected function filesystem()
     {
         return $this->container->disk()->filesystem()->getDriver();
     }
 
     public function save()
     {
-        Cache::put($this->key(), $this->all(), $this->ttl());
+        Cache::driver($this->cacheDriver())->put($this->key(), $this->all(), $this->ttl());
     }
 
     public function forget($path)
@@ -298,7 +317,7 @@ class AssetContainerContents
         $files = $this->all()->put($path, $metadata);
 
         if (Statamic::isWorker()) {
-            Cache::put($this->key(), $files, $this->ttl());
+            Cache::driver($this->cacheDriver())->put($this->key(), $files, $this->ttl());
         }
 
         $this->filteredFiles = null;
@@ -307,12 +326,12 @@ class AssetContainerContents
         return $this;
     }
 
-    private function key()
+    protected function key()
     {
         return 'asset-list-contents-'.$this->container->handle();
     }
 
-    private function ttl()
+    protected function ttl()
     {
         return Stache::isWatcherEnabled() ? 0 : null;
     }
