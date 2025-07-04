@@ -47,7 +47,7 @@ class AssetContainerContents
     /**
      * Flysystem's `DirectoryListing` gives us type, timestamps, dirname, and will allow us perform more efficient filtering, caching, etc.
      */
-    private function getRawFlysystemDirectoryListing(): DirectoryListing
+    protected function getRawFlysystemDirectoryListing(): DirectoryListing
     {
         return $this->filesystem()->listContents('/', true);
     }
@@ -58,7 +58,7 @@ class AssetContainerContents
      * @param  mixed  $attributes
      * @return array
      */
-    private function normalizeFlysystemAttributes($attributes)
+    protected function normalizeFlysystemAttributes($attributes)
     {
         // Merge attributes with `pathinfo()`.
         $normalized = array_merge([
@@ -87,7 +87,7 @@ class AssetContainerContents
      * this method ensures we get consistent results with S3 filesystems.
      * For more info, see: https://github.com/statamic/cms/pull/7205
      */
-    private function ensureMissingDirectoriesExist(Collection $files): Collection
+    protected function ensureMissingDirectoriesExist(Collection $files): Collection
     {
         $files
             ->filter(fn ($item) => $item['type'] === 'file')
@@ -120,7 +120,7 @@ class AssetContainerContents
      * @param  string  $path
      * @return array
      */
-    private function getNormalizedFlysystemMetadata($path)
+    protected function getNormalizedFlysystemMetadata($path)
     {
         // Use exception handling to avoid another `has()` API method call if possible.
         try {
@@ -264,7 +264,7 @@ class AssetContainerContents
         return $this->filteredDirectories[$key] = $files;
     }
 
-    private function filesystem()
+    protected function filesystem()
     {
         return $this->container->disk()->filesystem()->getDriver();
     }
@@ -307,12 +307,12 @@ class AssetContainerContents
         return $this;
     }
 
-    private function key()
+    protected function key()
     {
         return 'asset-list-contents-'.$this->container->handle();
     }
 
-    private function ttl()
+    protected function ttl()
     {
         return Stache::isWatcherEnabled() ? 0 : null;
     }
