@@ -24,6 +24,8 @@ class AssetContainerContents
         return $this;
     }
 
+
+
     /**
      * Get all asset container contents.
      *
@@ -35,7 +37,7 @@ class AssetContainerContents
             return $this->files;
         }
 
-        return $this->files = Cache::remember($this->key(), $this->ttl(), function () {
+        return $this->files = Cache::driver(config('cache.statamic_asset_container_contents_cache_driver'))->remember($this->key(), $this->ttl(), function () {
             return collect($this->getRawFlysystemDirectoryListing())
                 ->keyBy('path')
                 ->map(fn ($file) => $this->normalizeFlysystemAttributes($file))
@@ -164,7 +166,7 @@ class AssetContainerContents
 
     public function cached()
     {
-        return Cache::get($this->key());
+        return Cache::driver(config('cache.statamic_asset_container_contents_cache_driver'))->get($this->key());
     }
 
     public function files()
@@ -271,7 +273,7 @@ class AssetContainerContents
 
     public function save()
     {
-        Cache::put($this->key(), $this->all(), $this->ttl());
+        Cache::driver(config('cache.statamic_asset_container_contents_cache_driver'))->put($this->key(), $this->all(), $this->ttl());
     }
 
     public function forget($path)
@@ -298,7 +300,7 @@ class AssetContainerContents
         $files = $this->all()->put($path, $metadata);
 
         if (Statamic::isWorker()) {
-            Cache::put($this->key(), $files, $this->ttl());
+            Cache::driver(config('cache.statamic_asset_container_contents_cache_driver'))->put($this->key(), $files, $this->ttl());
         }
 
         $this->filteredFiles = null;
