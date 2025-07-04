@@ -41,7 +41,9 @@ class AssetContainerContents
         }
 
         return $this->files = Cache::driver($this->cacheDriver())
-            ->remember($this->key(), $this->ttl(), $this->generateAllItemsForCaching());
+            ->remember($this->key(), $this->ttl(), function () {
+                return $this->generateAllItemsForCaching();
+            });
     }
 
     protected function generateAllItemsForCaching(){
@@ -52,6 +54,9 @@ class AssetContainerContents
             ->sortKeys();
     }
 
+    // This was added because we had to invalidate the cache on our own, without doing the forget.
+    // this cache is rebuilt for few minutes, and if we allow requests to rebuild it, we will get a cache stampede.
+    // The cache would be cleared, we would get 1000 requests, and everyone would start rebuilding the cache. Crashing the server.
     public function rebuildCache()
     {
         Cache::driver($this->cacheDriver())
