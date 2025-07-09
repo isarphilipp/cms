@@ -160,7 +160,7 @@ export default {
                 return this.updateAttributes({ enabled })
             }
         },
-        enabled: {
+        enabledPDF: {
             get() {
                 return this.node.attrs.enabledPDF;
             },
