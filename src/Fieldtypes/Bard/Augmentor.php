@@ -54,9 +54,10 @@ class Augmentor
         }
 
         $value = $this->addSetIndexes($value);
-        $value = $this->convertToHtml($value);
-        $value = $this->convertToSets($value);
 
+        $value = $this->convertToHtml($value);
+
+        $value = $this->convertToSets($value);
         if ($this->augmentSets) {
             $value = $this->augmentSets($value, $shallow);
         }
@@ -92,7 +93,8 @@ class Augmentor
             if ($value['type'] == 'set') {
                 $this->sets[$index] = array_merge(
                     $value['attrs']['values'],
-                    [RowId::handle() => $value['attrs']['id'] ?? null]
+                    [RowId::handle() => $value['attrs']['id'] ?? null],
+                    ['enabldPDF' => $value['attrs']['enabledPDF'] ?? true],
                 );
                 $value['index'] = 'index-'.$index;
             }
@@ -128,7 +130,6 @@ class Augmentor
     protected function convertToSets($html)
     {
         $arr = preg_split('/(<set>index-\d+<\/set>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-
         return collect($arr)->map(function ($html) {
             if (preg_match('/^<set>index-(\d+)<\/set>/', $html, $matches)) {
                 return $this->sets[$matches[1]];
@@ -150,16 +151,14 @@ class Augmentor
     protected function augmentSets($value, $shallow)
     {
         $augmentMethod = $shallow ? 'shallowAugment' : 'augment';
-
         return $value->map(function ($set, $index) use ($augmentMethod) {
             if (! Arr::get($this->fieldtype->flattenedSetsConfig(), "{$set['type']}.fields")) {
                 return $set;
             }
 
             $values = $this->fieldtype->fields($set['type'], $index)->addValues($set)->{$augmentMethod}()->values()->all();
-
             return array_merge($values, [RowId::handle() => $set[RowId::handle()] ?? null,
-                'enabledPDF' => Arr::get($set, 'attrs.enabledPDF', true),
+                'enabldPDF' => $set['enabldPDF'] ?? true,
                 'type' => $set['type']]);
         })->all();
     }
