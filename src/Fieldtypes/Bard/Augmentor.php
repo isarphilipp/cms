@@ -94,7 +94,6 @@ class Augmentor
                 $this->sets[$index] = array_merge(
                     $value['attrs']['values'],
                     [RowId::handle() => $value['attrs']['id'] ?? null],
-                    ['enabldPDF' => $value['attrs']['enabledPDF'] ?? true],
                 );
                 $value['index'] = 'index-'.$index;
             }
@@ -157,8 +156,10 @@ class Augmentor
             }
 
             $values = $this->fieldtype->fields($set['type'], $index)->addValues($set)->{$augmentMethod}()->values()->all();
+
             return array_merge($values, [RowId::handle() => $set[RowId::handle()] ?? null,
-                'enabldPDF' => $set['enabldPDF'] ?? true,
+                // Set this manually, because $values sets only values from fields, and this is not a field but addedd manually
+                'enabledPDF' => $set['enabledPDF'] ?? true,
                 'type' => $set['type']]);
         })->all();
     }

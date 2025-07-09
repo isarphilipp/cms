@@ -416,8 +416,7 @@ class Bard extends Replicator
             'attrs' => [
                 'id' => $row['attrs']['id'] ?? $generatedId,
                 'enabled' => $row['attrs']['enabled'] ?? true,
-                'enabledPDF' => $row['attrs']['enabledPDF'] ?? true,
-                'values' => Arr::except($values, ['enabled','enabledPDF']),
+                'values' => Arr::except($values, ['enabled']),
             ],
         ];
     }

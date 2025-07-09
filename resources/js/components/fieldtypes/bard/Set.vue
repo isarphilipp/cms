@@ -162,10 +162,13 @@ export default {
         },
         enabledPDF: {
             get() {
-                return this.node.attrs.enabledPDF;
+                return (this.values && typeof this.values.enabledPDF !== 'undefined')
+                    ? this.values.enabledPDF
+                    : true;
             },
             set(enabledPDF) {
-                return this.updateAttributes({ enabledPDF })
+                let values = Object.assign({}, this.values, { enabledPDF });
+                this.updateAttributes({ values });
             }
         },
 
@@ -284,6 +287,16 @@ export default {
             return `${prefix}.${this.index}.attrs.values.${field.handle}`;
         },
 
+    },
+
+    mounted() {
+        // Ensure enabledPDF is set in values on mount
+        if (typeof this.values.enabledPDF === 'undefined') {
+            let setsWithDefaultPdfPreviewDisabled = window.setsWithDefaultPdfPreviewDisabled || [];
+            let enabledPDF = !setsWithDefaultPdfPreviewDisabled.includes(this.values.type);
+            let values = Object.assign({}, this.values, { enabledPDF });
+            this.updateAttributes({ values });
+        }
     },
 
     updated() {
