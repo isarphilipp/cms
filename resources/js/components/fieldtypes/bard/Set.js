@@ -28,6 +28,10 @@ export const Set = Node.create({
                 default: true,
                 parseHTML: element => element.querySelector('div')?.getAttribute('enabled'),
             },
+            enabledPDF: {
+                default: true,
+                parseHTML: element => element.querySelector('div')?.getAttribute('enabledPDF'),
+            },
             values: {
                 default: null,
                 parseHTML: element => element.querySelector('a')?.getAttribute('values'),

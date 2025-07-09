@@ -158,7 +158,9 @@ class Augmentor
 
             $values = $this->fieldtype->fields($set['type'], $index)->addValues($set)->{$augmentMethod}()->values()->all();
 
-            return array_merge($values, [RowId::handle() => $set[RowId::handle()] ?? null, 'type' => $set['type']]);
+            return array_merge($values, [RowId::handle() => $set[RowId::handle()] ?? null,
+                'enabledPDF' => Arr::get($set, 'attrs.enabledPDF', true),
+                'type' => $set['type']]);
         })->all();
     }
 

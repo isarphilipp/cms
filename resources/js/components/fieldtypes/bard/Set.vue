@@ -28,6 +28,11 @@
                 </div>
                 <div class="replicator-set-controls">
                     <toggle-fieldtype
+                        handle="set-enabled-pdf"
+                        class="toggle-sm rtl:ml-4 ltr:mr-4"
+                        v-model="enabledPDF"
+                        v-tooltip.top="(enabledPDF) ? __('Included in pdf') : __('Hidden from pdf')" />
+                    <toggle-fieldtype
                         handle="set-enabled"
                         class="toggle-sm rtl:ml-4 ltr:mr-4"
                         v-model="enabled"
@@ -91,7 +96,7 @@ export default {
 
     mixins: [
         ValidatesFieldConditions,
-        ManagesPreviewText, 
+        ManagesPreviewText,
         HasFieldActions,
     ],
 
@@ -153,6 +158,14 @@ export default {
             },
             set(enabled) {
                 return this.updateAttributes({ enabled })
+            }
+        },
+        enabled: {
+            get() {
+                return this.node.attrs.enabledPDF;
+            },
+            set(enabledPDF) {
+                return this.updateAttributes({ enabledPDF })
             }
         },
 
