@@ -157,9 +157,10 @@ class Augmentor
 
             $values = $this->fieldtype->fields($set['type'], $index)->addValues($set)->{$augmentMethod}()->values()->all();
 
+
             return array_merge($values, [RowId::handle() => $set[RowId::handle()] ?? null,
                 // Set this manually, because $values sets only values from fields, and this is not a field but addedd manually
-                'enabledPDF' => $set['enabledPDF'] ?? true,
+                'enabledPDF' => $set['enabledPDF'] ?? ! in_array($set['type'], config('statamic.content.sets_with_default_disabled_pdf', [])),
                 'type' => $set['type']]);
         })->all();
     }

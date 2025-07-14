@@ -411,11 +411,13 @@ class Bard extends Replicator
 
         $generatedId = Arr::pull($values, '_id');
 
+
         return [
             'type' => 'set',
             'attrs' => [
                 'id' => $row['attrs']['id'] ?? $generatedId,
                 'enabled' => $row['attrs']['enabled'] ?? true,
+                'enabledPDF' => $row['attrs']['enabledPDF'] ?? false,
                 'values' => Arr::except($values, ['enabled']),
             ],
         ];

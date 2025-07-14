@@ -289,15 +289,6 @@ export default {
 
     },
 
-    mounted() {
-        // Ensure enabledPDF is set in values on mount
-        if (typeof this.values.enabledPDF === 'undefined') {
-            let setsWithDefaultPdfPreviewDisabled = window.setsWithDefaultPdfPreviewDisabled || [];
-            let enabledPDF = !setsWithDefaultPdfPreviewDisabled.includes(this.values.type);
-            let values = Object.assign({}, this.values, { enabledPDF });
-            this.updateAttributes({ values });
-        }
-    },
 
     updated() {
         // This is a workaround to avoid Firefox's inability to select inputs/textareas when the
