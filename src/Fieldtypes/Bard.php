@@ -411,7 +411,7 @@ class Bard extends Replicator
 
         $generatedId = Arr::pull($values, '_id');
 
-        $values['enabledPDF'] = Arr::pull($values, 'enabledPDF', ! in_array($row['attrs']['type'], config('statamic.content.sets_with_default_disabled_pdf', [])));
+        $values['enabledPDF'] = Arr::pull($values, 'enabledPDF', ! in_array($row['type'], config('statamic.content.sets_with_default_disabled_pdf', [])));
 
         return [
             'type' => 'set',
