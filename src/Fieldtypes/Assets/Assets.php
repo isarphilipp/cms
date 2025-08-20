@@ -250,8 +250,18 @@ class Assets extends Fieldtype
     public function augment($values)
     {
         $values = Arr::wrap($values);
-
         $single = $this->config('max_files') === 1;
+
+        if (!app()->isProduction()) {
+            $defaultImages = config('statamic.content.default_image_on_local_environment', false);
+
+            // Handle empty values with default image
+            if (empty($values) && $defaultImages) {
+                if (is_array($defaultImages) && !empty($defaultImages)) {
+                    $values = [array_first($defaultImages)];
+                }
+            }
+        }
 
         if ($single && Blink::has($key = 'assets-augment-'.json_encode($values))) {
             return Blink::get($key);
@@ -262,12 +272,25 @@ class Assets extends Fieldtype
             ->all();
 
         $query = $this->container()->queryAssets()->whereIn('path', $values);
-
         $query = new OrderedQueryBuilder($query, $ids);
 
-        return $single && ! config('statamic.system.always_augment_to_query', false)
+        $result = $single && !config('statamic.system.always_augment_to_query', false)
             ? Blink::once($key, fn () => $query->first())
             : $query;
+
+        // If no results or asset doesn't exist, try to use default image (only in non-production)
+        if (!app()->isProduction() && ($result === null || ($single && !$result->exists()))) {
+            $defaultImages = config('statamic.content.default_image_on_local_environment', false);
+            if ($defaultImages && is_array($defaultImages) && !empty($defaultImages)) {
+                $defaultPath = array_first($defaultImages);
+                $defaultAsset = $this->container()->asset($defaultPath);
+                if ($defaultAsset) {
+                    return $single ? $defaultAsset : collect([$defaultAsset]);
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function shallowAugment($values)

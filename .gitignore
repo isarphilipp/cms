@@ -7,7 +7,6 @@ node_modules
 .phpunit.cache
 .php-cs-fixer.cache
 tests/Fakes/Composer/Package/test-package/composer.json
-resources/dist
 resources/dist-frontend
 composer.lock
 .env

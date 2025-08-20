@@ -54,9 +54,10 @@ class Augmentor
         }
 
         $value = $this->addSetIndexes($value);
-        $value = $this->convertToHtml($value);
-        $value = $this->convertToSets($value);
 
+        $value = $this->convertToHtml($value);
+
+        $value = $this->convertToSets($value);
         if ($this->augmentSets) {
             $value = $this->augmentSets($value, $shallow);
         }
@@ -92,7 +93,7 @@ class Augmentor
             if ($value['type'] == 'set') {
                 $this->sets[$index] = array_merge(
                     $value['attrs']['values'],
-                    [RowId::handle() => $value['attrs']['id'] ?? null]
+                    [RowId::handle() => $value['attrs']['id'] ?? null],
                 );
                 $value['index'] = 'index-'.$index;
             }
@@ -128,7 +129,6 @@ class Augmentor
     protected function convertToSets($html)
     {
         $arr = preg_split('/(<set>index-\d+<\/set>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-
         return collect($arr)->map(function ($html) {
             if (preg_match('/^<set>index-(\d+)<\/set>/', $html, $matches)) {
                 return $this->sets[$matches[1]];
@@ -150,7 +150,6 @@ class Augmentor
     protected function augmentSets($value, $shallow)
     {
         $augmentMethod = $shallow ? 'shallowAugment' : 'augment';
-
         return $value->map(function ($set, $index) use ($augmentMethod) {
             if (! Arr::get($this->fieldtype->flattenedSetsConfig(), "{$set['type']}.fields")) {
                 return $set;
@@ -158,7 +157,11 @@ class Augmentor
 
             $values = $this->fieldtype->fields($set['type'], $index)->addValues($set)->{$augmentMethod}()->values()->all();
 
-            return array_merge($values, [RowId::handle() => $set[RowId::handle()] ?? null, 'type' => $set['type']]);
+
+            return array_merge($values, [RowId::handle() => $set[RowId::handle()] ?? null,
+                // Set this manually, because $values sets only values from fields, and this is not a field but addedd manually
+                'enabledPDF' => $set['enabledPDF'] ?? ! in_array($set['type'], config('statamic.content.sets_with_default_disabled_pdf', [])),
+                'type' => $set['type']]);
         })->all();
     }
 
