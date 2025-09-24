@@ -40,18 +40,13 @@ class AssetContainerContents
             return $this->files;
         }
 
-        return $this->files = Cache::driver($this->cacheDriver())
-            ->remember($this->key(), $this->ttl(), function () {
-                return $this->generateAllItemsForCaching();
-            });
-    }
-
-    protected function generateAllItemsForCaching(){
+        return $this->files = $this->cacheStore()->remember($this->key(), $this->ttl(), function () {
         return collect($this->getRawFlysystemDirectoryListing())
             ->keyBy('path')
             ->map(fn ($file) => $this->normalizeFlysystemAttributes($file))
             ->pipe(fn ($files) => $this->ensureMissingDirectoriesExist($files))
             ->sortKeys();
+        });
     }
 
     // This was added because we had to invalidate the cache on our own, without doing the forget.
@@ -183,7 +178,7 @@ class AssetContainerContents
 
     public function cached()
     {
-        return Cache::driver($this->cacheDriver())->get($this->key());
+        return $this->cacheStore()->get($this->key());
     }
 
     public function files()
@@ -290,7 +285,7 @@ class AssetContainerContents
 
     public function save()
     {
-        Cache::driver($this->cacheDriver())->put($this->key(), $this->all(), $this->ttl());
+        $this->cacheStore()->put($this->key(), $this->all(), $this->ttl());
     }
 
     public function forget($path)
@@ -317,7 +312,7 @@ class AssetContainerContents
         $files = $this->all()->put($path, $metadata);
 
         if (Statamic::isWorker()) {
-            Cache::driver($this->cacheDriver())->put($this->key(), $files, $this->ttl());
+            $this->cacheStore()->put($this->key(), $files, $this->ttl());
         }
 
         $this->filteredFiles = null;
@@ -334,5 +329,15 @@ class AssetContainerContents
     protected function ttl()
     {
         return Stache::isWatcherEnabled() ? 0 : null;
+    }
+
+    public function cacheStore()
+    {
+        return Cache::store($this->hasCustomStore() ? 'asset_container_contents' : null);
+    }
+
+    private function hasCustomStore(): bool
+    {
+        return config()->has('cache.stores.asset_container_contents');
     }
 }

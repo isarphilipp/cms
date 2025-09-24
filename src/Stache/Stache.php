@@ -216,7 +216,7 @@ class Stache
             return null;
         }
 
-        return Carbon::createFromTimestamp($cache['date']);
+        return Carbon::createFromTimestamp($cache['date'], config('app.timezone'));
     }
 
     public function disableUpdatingIndexes()
